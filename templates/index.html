@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>BotHub Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main-style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <header>
+            <h1>Рифмономикон</h1>
+        </header>
+        <section class="chat-box">
+            <input type="text" id="user-input" placeholder="Введите ваш запрос">
+            <button onclick="sendMessage()">Отправить</button>
+        </section>
+        <div id="response" class="response-box"></div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = data.reply;
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                document.getElementById('response').innerText = "Произошла ошибка";
+            });
+        }
+    </script>
+</body>
+</html>
