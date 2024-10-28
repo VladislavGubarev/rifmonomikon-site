@@ -8,18 +8,47 @@
 <body>
     <div class="chat-container">
         <header>
-            <h1>Рифмономикон</h1>
+            <h1>Чат с BotHub GPT</h1>
         </header>
         <section class="chat-box">
             <input type="text" id="user-input" placeholder="Введите ваш запрос">
             <button onclick="sendMessage()">Отправить</button>
         </section>
-        <div id="response" class="response-box"></div>
+        <div id="chat-history" class="response-box"></div>
     </div>
 
     <script>
+        // Функция для обновления истории чата на странице
+        function updateChatHistory() {
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            const chatHistoryDiv = document.getElementById('chat-history');
+            chatHistoryDiv.innerHTML = ''; // Очистить текущее содержимое
+
+            chatHistory.forEach(({ user, bot }) => {
+                const userMessage = document.createElement('div');
+                userMessage.className = 'user-message';
+                userMessage.innerText = `Вы: ${user}`;
+
+                const botMessage = document.createElement('div');
+                botMessage.className = 'bot-message';
+                botMessage.innerText = `Bot: ${bot}`;
+
+                chatHistoryDiv.appendChild(userMessage);
+                chatHistoryDiv.appendChild(botMessage);
+            });
+        }
+
+        // Функция для отправки сообщения
         function sendMessage() {
             const userInput = document.getElementById('user-input').value;
+
+            if (!userInput) return; // Не отправлять пустые сообщения
+
+            // Сохранить сообщение пользователя в истории
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            chatHistory.push({ user: userInput, bot: '' });
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            updateChatHistory(); // Обновить историю
 
             fetch('/chat', {
                 method: 'POST',
@@ -30,12 +59,22 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('response').innerText = data.reply;
+                // Обновить историю с ответом бота
+                chatHistory[chatHistory.length - 1].bot = data.reply; // Добавить ответ бота
+                localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+                updateChatHistory(); // Обновить историю
             })
             .catch(error => {
                 console.error('Ошибка:', error);
                 document.getElementById('response').innerText = "Произошла ошибка";
             });
+
+            document.getElementById('user-input').value = ''; // Очистить поле ввода
+        }
+
+        // Загрузка истории чата при загрузке страницы
+        window.onload = function() {
+            updateChatHistory();
         }
     </script>
 </body>
