@@ -1,0 +1,87 @@
+/* Анимация фона */
+body {
+    background: linear-gradient(90deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 12s ease infinite;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+@keyframes gradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Основной контейнер */
+.chat-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Заголовок */
+header h1 {
+    font-size: 1.8rem;
+    color: #444;
+    margin: 0 0 20px;
+}
+
+/* Поле ввода и кнопка */
+.chat-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#user-input {
+    width: 70%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+#user-input:focus {
+    box-shadow: 0 0 5px rgba(33, 150, 243, 0.4);
+    outline: none;
+}
+
+button {
+    background-color: #556ee6;
+    color: #fff;
+    padding: 12px 16px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    background-color: #4356d1;
+}
+
+/* Контейнер для ответа */
+.response-box {
+    background-color: #f1f3f4;
+    border-radius: 8px;
+    padding: 15px;
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.5;
+    box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
