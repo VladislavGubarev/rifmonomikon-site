@@ -62,9 +62,10 @@
         </footer>
     </div>
 
-    <script>
+ <script>
         let selectedRhymeType = 'парная';
 
+        // Функция для выбора типа рифмы
         function selectRhymeType(type) {
             selectedRhymeType = type;
             const cards = document.querySelectorAll('.rhyme-card');
@@ -72,9 +73,9 @@
             document.querySelector(`.rhyme-card[onclick="selectRhymeType('${type}')"]`).classList.add('selected');
         }
 
+        // Функция для отправки сообщения
         function sendMessage() {
             const userInput = document.getElementById('user-input').value;
-
             if (!userInput) return;
 
             addMessageToChat('user-message', `Вы: ${userInput}`);
@@ -88,6 +89,7 @@
             .then(response => response.json())
             .then(data => {
                 addMessageToChat('bot-message', `Bot: ${data.reply}`);
+                saveChatHistory();
             })
             .catch(error => {
                 console.error('Ошибка:', error);
@@ -95,21 +97,53 @@
             });
         }
 
+        // Функция добавления сообщений в чат
         function addMessageToChat(className, text) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${className}`;
             messageDiv.innerText = text;
             document.getElementById('chat-box').appendChild(messageDiv);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+            saveChatHistory();
         }
 
+        // Функция сохранения истории чатов в localStorage
+        function saveChatHistory() {
+            const chatMessages = Array.from(document.querySelectorAll('#chat-box .message')).map(message => ({
+                className: message.className,
+                text: message.innerText
+            }));
+            localStorage.setItem('chatHistory', JSON.stringify(chatMessages));
+        }
+
+        // Функция загрузки истории чатов из localStorage
+        function loadChatHistory() {
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory'));
+            if (chatHistory) {
+                chatHistory.forEach(({ className, text }) => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = className;
+                    messageDiv.innerText = text;
+                    document.getElementById('chat-box').appendChild(messageDiv);
+                });
+                document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+            }
+        }
+
+        // Показать пример при наведении
         function showExample(card, example) {
             card.querySelector('.example').innerText = example;
         }
 
+        // Скрыть пример при убирании курсора
         function hideExample(card) {
             card.querySelector('.example').innerText = '';
         }
+
+        // Загружаем историю чатов при загрузке страницы
+        window.onload = function() {
+            loadChatHistory();
+        };
     </script>
 
 
