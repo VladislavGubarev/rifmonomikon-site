@@ -2,80 +2,116 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>BotHub Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рифмономикон - Помощник по рифме</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main-style.css') }}">
 </head>
 <body>
-    <div class="chat-container">
+    <div class="container">
         <header>
-            <h1>Рифмономикон</h1>
+            <div class="logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Рифмономикон Лого">
+            </div>
+            <h1>Рифмономикон - Помощник по рифме</h1>
+            <p>Добро пожаловать! Здесь можно генерировать рифмы для ваших стихов.</p>
         </header>
-        <section class="chat-box">
-            <input type="text" id="user-input" placeholder="Введите ваш запрос">
-            <button onclick="sendMessage()">Отправить</button>
+
+        <!-- Чат -->
+        <section class="chat-container">
+            <div id="chat-box" class="chat-box">
+                <!-- Сообщения чата будут добавляться сюда -->
+            </div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="Напишите сообщение..." autocomplete="off">
+                <button id="send-button" onclick="sendMessage()">Отправить</button>
+            </div>
         </section>
-        <div id="chat-history" class="response-box"></div>
+
+        <!-- Блок фильтров для рифмы -->
+        <section class="filters">
+            <h2>Выберите тип рифмы</h2>
+            <div class="rhyme-cards">
+                <div class="rhyme-card" onclick="selectRhymeType('парная')" onmouseover="showExample(this, 'Пример: Река течёт, вода сверкает,\nВесёлый ветер завывает.')" onmouseout="hideExample(this)">
+                    <h3>Парная рифма</h3>
+                    <p>Рифмуются соседние строки.</p>
+                    <p class="example"></p>
+                </div>
+                <div class="rhyme-card" onclick="selectRhymeType('кольцевая')" onmouseover="showExample(this, 'Пример: Свет звёздный на землю падал,\nИ ночь укрыла тьма.\nВ душе же зажглась лампа,\nЛишь свет от них остался.')" onmouseout="hideExample(this)">
+                    <h3>Кольцевая рифма</h3>
+                    <p>Первая строка рифмуется с последней.</p>
+                    <p class="example"></p>
+                </div>
+                <div class="rhyme-card" onclick="selectRhymeType('перекрёстная')" onmouseover="showExample(this, 'Пример: Стоит берёза у реки,\nКак снег белеет лес густой.\nЗвучат весёлые звонки,\nГоняясь за волной.')" onmouseout="hideExample(this)">
+                    <h3>Перекрёстная рифма</h3>
+                    <p>Рифмуются строки через одну.</p>
+                    <p class="example"></p>
+                </div>
+                <div class="rhyme-card" onclick="selectRhymeType('перемежающаяся')" onmouseover="showExample(this, 'Пример: Осень прошла, и зима на пороге,\nЛистья шуршат в тишине.\nВетер холодный зовёт меня в дороге,\nЛишь ночь тиха в окне.')" onmouseout="hideExample(this)">
+                    <h3>Перемежающаяся рифма</h3>
+                    <p>Каждая строка рифмуется с другой.</p>
+                    <p class="example"></p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-links">
+                <a href="https://vk.com" target="_blank">VK</a>
+                <a href="https://t.me" target="_blank">Telegram</a>
+            </div>
+        </footer>
     </div>
 
     <script>
-        // Функция для обновления истории чата на странице
-        function updateChatHistory() {
-            const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
-            const chatHistoryDiv = document.getElementById('chat-history');
-            chatHistoryDiv.innerHTML = ''; // Очистить текущее содержимое
+        let selectedRhymeType = 'парная';
 
-            chatHistory.forEach(({ user, bot }) => {
-                const userMessage = document.createElement('div');
-                userMessage.className = 'user-message';
-                userMessage.innerText = `Вы: ${user}`;
-
-                const botMessage = document.createElement('div');
-                botMessage.className = 'bot-message';
-                botMessage.innerText = `Bot: ${bot}`;
-
-                chatHistoryDiv.appendChild(userMessage);
-                chatHistoryDiv.appendChild(botMessage);
-            });
+        function selectRhymeType(type) {
+            selectedRhymeType = type;
+            const cards = document.querySelectorAll('.rhyme-card');
+            cards.forEach(card => card.classList.remove('selected'));
+            document.querySelector(`.rhyme-card[onclick="selectRhymeType('${type}')"]`).classList.add('selected');
         }
 
-        // Функция для отправки сообщения
         function sendMessage() {
             const userInput = document.getElementById('user-input').value;
 
-            if (!userInput) return; // Не отправлять пустые сообщения
+            if (!userInput) return;
 
-            // Сохранить сообщение пользователя в истории
-            const chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
-            chatHistory.push({ user: userInput, bot: '' });
-            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-            updateChatHistory(); // Обновить историю
+            addMessageToChat('user-message', `Вы: ${userInput}`);
+            document.getElementById('user-input').value = '';
 
             fetch('/chat', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: userInput })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userInput, rhyme_type: selectedRhymeType })
             })
             .then(response => response.json())
             .then(data => {
-                // Обновить историю с ответом бота
-                chatHistory[chatHistory.length - 1].bot = data.reply; // Добавить ответ бота
-                localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-                updateChatHistory(); // Обновить историю
+                addMessageToChat('bot-message', `Bot: ${data.reply}`);
             })
             .catch(error => {
                 console.error('Ошибка:', error);
-                document.getElementById('response').innerText = "Произошла ошибка";
+                addMessageToChat('bot-message', 'Ошибка при получении ответа.');
             });
-
-            document.getElementById('user-input').value = ''; // Очистить поле ввода
         }
 
-        // Загрузка истории чата при загрузке страницы
-        window.onload = function() {
-            updateChatHistory();
+        function addMessageToChat(className, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.innerText = text;
+            document.getElementById('chat-box').appendChild(messageDiv);
+            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+        }
+
+        function showExample(card, example) {
+            card.querySelector('.example').innerText = example;
+        }
+
+        function hideExample(card) {
+            card.querySelector('.example').innerText = '';
         }
     </script>
+
+
 </body>
 </html>
