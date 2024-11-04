@@ -13,6 +13,10 @@ def index():
 @app.route('/chat', methods=['POST'])
 def chat():
     user_message = request.json.get('message', '')
+    rhyme_type = request.json.get('rhyme_type', 'парная')
+
+    # Формируем инструкцию для ChatGPT в зависимости от выбранного типа рифмы
+    rhyme_instruction = f"Используй {rhyme_type} рифму в стихах."
 
     # Формирование запроса к BotHub
     response = requests.post(
@@ -23,7 +27,10 @@ def chat():
         },
         json={
             'model': 'gpt-3.5-turbo',
-            'messages': [{'role': 'user', 'content': user_message}]
+            'messages': [
+                {'role': 'system', 'content': "Ты помогатор для написания стихов."},
+                {'role': 'user', 'content': f"{rhyme_instruction}\n{user_message}"}
+            ]
         }
     )
 
